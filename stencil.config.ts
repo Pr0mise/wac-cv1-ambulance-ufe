@@ -23,6 +23,6 @@ export const config: Config = {
   ],
   testing: {
     browserHeadless: "shell",
-    browserExecutablePath: 'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe'
+    //browserExecutablePath: 'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe'
   },
 };
