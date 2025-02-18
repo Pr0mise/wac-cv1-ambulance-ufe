@@ -1,6 +1,7 @@
 import { Config } from '@stencil/core';
 
 export const config: Config = {
+  globalScript: 'src/global/app.ts',
   namespace: 'waiting-list',
   outputTargets: [
     {
@@ -22,5 +23,6 @@ export const config: Config = {
   ],
   testing: {
     browserHeadless: "shell",
+    browserExecutablePath: 'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe'
   },
 };
