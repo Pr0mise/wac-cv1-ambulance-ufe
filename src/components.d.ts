@@ -6,24 +6,84 @@
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 export namespace Components {
+    interface Pr0miseAmbulanceWlApp {
+        "basePath": string;
+    }
+    interface Pr0miseAmbulanceWlEditor {
+        "entryId": string;
+    }
     interface Pr0miseAmbulanceWlList {
     }
 }
+export interface Pr0miseAmbulanceWlEditorCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLPr0miseAmbulanceWlEditorElement;
+}
+export interface Pr0miseAmbulanceWlListCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLPr0miseAmbulanceWlListElement;
+}
 declare global {
+    interface HTMLPr0miseAmbulanceWlAppElement extends Components.Pr0miseAmbulanceWlApp, HTMLStencilElement {
+    }
+    var HTMLPr0miseAmbulanceWlAppElement: {
+        prototype: HTMLPr0miseAmbulanceWlAppElement;
+        new (): HTMLPr0miseAmbulanceWlAppElement;
+    };
+    interface HTMLPr0miseAmbulanceWlEditorElementEventMap {
+        "editor-closed": string;
+    }
+    interface HTMLPr0miseAmbulanceWlEditorElement extends Components.Pr0miseAmbulanceWlEditor, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLPr0miseAmbulanceWlEditorElementEventMap>(type: K, listener: (this: HTMLPr0miseAmbulanceWlEditorElement, ev: Pr0miseAmbulanceWlEditorCustomEvent<HTMLPr0miseAmbulanceWlEditorElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLPr0miseAmbulanceWlEditorElementEventMap>(type: K, listener: (this: HTMLPr0miseAmbulanceWlEditorElement, ev: Pr0miseAmbulanceWlEditorCustomEvent<HTMLPr0miseAmbulanceWlEditorElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLPr0miseAmbulanceWlEditorElement: {
+        prototype: HTMLPr0miseAmbulanceWlEditorElement;
+        new (): HTMLPr0miseAmbulanceWlEditorElement;
+    };
+    interface HTMLPr0miseAmbulanceWlListElementEventMap {
+        "entry-clicked": string;
+    }
     interface HTMLPr0miseAmbulanceWlListElement extends Components.Pr0miseAmbulanceWlList, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLPr0miseAmbulanceWlListElementEventMap>(type: K, listener: (this: HTMLPr0miseAmbulanceWlListElement, ev: Pr0miseAmbulanceWlListCustomEvent<HTMLPr0miseAmbulanceWlListElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLPr0miseAmbulanceWlListElementEventMap>(type: K, listener: (this: HTMLPr0miseAmbulanceWlListElement, ev: Pr0miseAmbulanceWlListCustomEvent<HTMLPr0miseAmbulanceWlListElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
     }
     var HTMLPr0miseAmbulanceWlListElement: {
         prototype: HTMLPr0miseAmbulanceWlListElement;
         new (): HTMLPr0miseAmbulanceWlListElement;
     };
     interface HTMLElementTagNameMap {
+        "pr0mise-ambulance-wl-app": HTMLPr0miseAmbulanceWlAppElement;
+        "pr0mise-ambulance-wl-editor": HTMLPr0miseAmbulanceWlEditorElement;
         "pr0mise-ambulance-wl-list": HTMLPr0miseAmbulanceWlListElement;
     }
 }
 declare namespace LocalJSX {
+    interface Pr0miseAmbulanceWlApp {
+        "basePath"?: string;
+    }
+    interface Pr0miseAmbulanceWlEditor {
+        "entryId"?: string;
+        "onEditor-closed"?: (event: Pr0miseAmbulanceWlEditorCustomEvent<string>) => void;
+    }
     interface Pr0miseAmbulanceWlList {
+        "onEntry-clicked"?: (event: Pr0miseAmbulanceWlListCustomEvent<string>) => void;
     }
     interface IntrinsicElements {
+        "pr0mise-ambulance-wl-app": Pr0miseAmbulanceWlApp;
+        "pr0mise-ambulance-wl-editor": Pr0miseAmbulanceWlEditor;
         "pr0mise-ambulance-wl-list": Pr0miseAmbulanceWlList;
     }
 }
@@ -31,6 +91,8 @@ export { LocalJSX as JSX };
 declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
+            "pr0mise-ambulance-wl-app": LocalJSX.Pr0miseAmbulanceWlApp & JSXBase.HTMLAttributes<HTMLPr0miseAmbulanceWlAppElement>;
+            "pr0mise-ambulance-wl-editor": LocalJSX.Pr0miseAmbulanceWlEditor & JSXBase.HTMLAttributes<HTMLPr0miseAmbulanceWlEditorElement>;
             "pr0mise-ambulance-wl-list": LocalJSX.Pr0miseAmbulanceWlList & JSXBase.HTMLAttributes<HTMLPr0miseAmbulanceWlListElement>;
         }
     }
