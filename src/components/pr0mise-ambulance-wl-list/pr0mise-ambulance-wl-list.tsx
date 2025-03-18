@@ -14,7 +14,7 @@ export class Pr0miseAmbulanceWlList {
 
   waitingPatients: WaitingListEntry[];
 
-  private async getWaitingPatientsAsync(){
+  private async getWaitingPatientsAsync(): Promise<WaitingListEntry[]> {
     // be prepared for connectivitiy issues
     try {
       const configuration = new Configuration({
