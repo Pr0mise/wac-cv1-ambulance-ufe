@@ -12,7 +12,7 @@ export class Pr0miseAmbulanceWlList {
   @Prop() ambulanceId: string;
   @State() errorMessage: string;
 
-  waitingPatients: any[];
+  waitingPatients: WaitingListEntry[];
 
   private async getWaitingPatientsAsync(){
     // be prepared for connectivitiy issues
