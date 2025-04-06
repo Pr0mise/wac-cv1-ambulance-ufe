@@ -55,6 +55,7 @@ export function instanceOfCondition(value: object): boolean {
     return isInstance;
 }
 
+
 export function ConditionFromJSON(json: any): Condition {
     return ConditionFromJSONTyped(json, false);
 }
