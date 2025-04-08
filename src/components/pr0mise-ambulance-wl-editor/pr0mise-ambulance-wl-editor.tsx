@@ -1,26 +1,22 @@
 import { Component, Host, Prop, State, h, EventEmitter, Event } from '@stencil/core';
-import { AmbulanceWaitingListApi, WaitingListEntry, Configuration, Condition, AmbulanceConditionsApi } from '../../api/ambulance-wl';
-
+import { AmbulanceWaitingListApi, AmbulanceConditionsApi, WaitingListEntry, Configuration, Condition } from '../../api/ambulance-wl';
 @Component({
   tag: 'pr0mise-ambulance-wl-editor',
   styleUrl: 'pr0mise-ambulance-wl-editor.css',
   shadow: true,
 })
 export class Pr0miseAmbulanceWlEditor {
-
   @Prop() entryId: string;
-
   @Prop() ambulanceId: string;
   @Prop() apiBase: string;
 
   @Event({eventName: "editor-closed"}) editorClosed: EventEmitter<string>;
 
   @State() private duration = 15
-
   @State() entry: WaitingListEntry;
+  @State() conditions: Condition[];
   @State() errorMessage:string;
   @State() isValid: boolean;
-  @State() conditions: Condition[];
 
   private formElement: HTMLFormElement;
 
@@ -38,6 +34,7 @@ export class Pr0miseAmbulanceWlEditor {
         waitingSince: new Date(Date.now()),
         estimatedDurationMinutes: 15
       };
+      this.entry.estimatedStart = await this.assumedEntryDateAsync();
       return this.entry;
     }
     if ( !this.entryId ) {
@@ -63,6 +60,29 @@ export class Pr0miseAmbulanceWlEditor {
       this.errorMessage = `Cannot retrieve list of waiting patients: ${err.message || "unknown"}`
     }
     return undefined;
+  }
+
+  private async assumedEntryDateAsync(): Promise<Date> {
+    try {
+      const configuration = new Configuration({
+        basePath: this.apiBase,
+      });
+  
+      const waitingListApi = new AmbulanceWaitingListApi(configuration);
+      const response = await waitingListApi.getWaitingListEntriesRaw({ambulanceId: this.ambulanceId})
+      if (response.raw.status > 299) {
+        return new Date();
+      }
+      const lastPatientOut = (await response.value())
+        .map((_: WaitingListEntry) =>
+            _.estimatedStart.getTime()
+            + _.estimatedDurationMinutes * 60 * 1000
+        )
+        .reduce((acc: number, value: number) => Math.max(acc, value), 0);
+      return new Date(Math.max(Date.now(), lastPatientOut));
+    } catch (err: any) {
+      return new Date();
+    }
   }
 
   private async getConditions(): Promise<Condition[]> {
@@ -91,47 +111,52 @@ export class Pr0miseAmbulanceWlEditor {
   private handleSliderInput(event: Event) {
     this.duration = +(event.target as HTMLInputElement).value;
   }
-
   render() {
     if(this.errorMessage) {
       return (
-        <Host>
-          <div class="error">{this.errorMessage}</div>
-        </Host>
-        )
-    }
+      <Host>
+        <div class="error">{this.errorMessage}</div>
+      </Host>
+      )
+  }
     return (
       <Host>
         <form ref={el => this.formElement = el}>
-          <md-filled-text-field label="Meno a Priezvisko"
-            required value={this.entry?.name}
-            oninput={ (ev: InputEvent) => {
-              if(this.entry) {this.entry.name = this.handleInputEvent(ev)}
-            } }>
-            <md-icon slot="leading-icon">person</md-icon>
-          </md-filled-text-field>
+      <md-filled-text-field label="Meno a Priezvisko"
+        required value={this.entry?.name}
+        oninput={ (ev: InputEvent) => {
+          if(this.entry) {this.entry.name = this.handleInputEvent(ev)}
+        } }>
+        <md-icon slot="leading-icon">person</md-icon>
+      </md-filled-text-field>
 
-          <md-filled-text-field label="Registračné číslo pacienta"
-            required value={this.entry?.patientId}
-            oninput={ (ev: InputEvent) => {
-              if(this.entry) {this.entry.patientId = this.handleInputEvent(ev)}
-            } }>
-            <md-icon slot="leading-icon">fingerprint</md-icon>
-          </md-filled-text-field>
+      <md-filled-text-field label="Registračné číslo pacienta"
+      required value={this.entry?.patientId}
+      oninput={ (ev: InputEvent) => {
+        if(this.entry) {this.entry.patientId = this.handleInputEvent(ev)}
+      } }>
+        <md-icon slot="leading-icon">fingerprint</md-icon>
+      </md-filled-text-field>
 
-          <md-filled-text-field label="Čakáte od" disabled
-            value={this.entry?.waitingSince}>
-            <md-icon slot="leading-icon">watch_later</md-icon>
-          </md-filled-text-field>
+      <md-filled-text-field label="Čakáte od"
+      value={new Date(this.entry?.waitingSince || Date.now()).toLocaleTimeString()}>
+        <md-icon slot="leading-icon">watch_later</md-icon>
+      </md-filled-text-field>
 
-          {this.renderConditions()}
-        </form>
+      <md-filled-text-field disabled
+                        label="Predpokladaný čas vyšetrenia"
+                        value={new Date(this.entry?.estimatedStart || Date.now()).toLocaleTimeString()}>
+                        <md-icon slot="leading-icon">login</md-icon>
+        </md-filled-text-field>
 
-        <div class="duration-slider">
-          <span class="label">Predpokladaná doba trvania:&nbsp; </span>
-          <span class="label">{this.duration}</span>
-          <span class="label">&nbsp;minút</span>
-          <md-slider
+      {this.renderConditions()}
+      </form>
+
+      <div class="duration-slider">
+        <span class="label">Predpokladaná doba trvania:&nbsp; </span>
+        <span class="label">{this.duration}</span>
+        <span class="label">&nbsp;minút</span>
+        <md-slider
             min="2" max="45" value={this.entry?.estimatedDurationMinutes || 15} ticks labeled
             oninput={ (ev:InputEvent) => {
               if(this.entry) {
@@ -139,85 +164,29 @@ export class Pr0miseAmbulanceWlEditor {
                   = Number.parseInt(this.handleInputEvent(ev))};
               this.handleSliderInput(ev)
             } }></md-slider>
-        </div>
+      </div>
 
-        <md-divider inset></md-divider>
+      <md-divider></md-divider>
 
-        <div class="actions">
+      <div class="actions">
         <md-filled-tonal-button id="delete" disabled={!this.entry || this.entry?.id === "@new" }
-            onClick={() => this.deleteEntry()} >
-            <md-icon slot="icon">delete</md-icon>
-            Zmazať
-          </md-filled-tonal-button>
-          <span class="stretch-fill"></span>
-          <md-outlined-button id="cancel"
-            onClick={() => this.editorClosed.emit("cancel")}>
-            Zrušiť
-          </md-outlined-button>
-          <md-filled-button id="confirm" disabled={ !this.isValid }
-            onClick={() => this.updateEntry() }
-            >
-            <md-icon slot="icon">save</md-icon>
-            Uložiť
-          </md-filled-button>
-        </div>
-      </Host>
+          onClick={() => this.deleteEntry()} >
+          <md-icon slot="icon">delete</md-icon>
+          Zmazať
+        </md-filled-tonal-button>
+        <span class="stretch-fill"></span>
+        <md-outlined-button id="cancel"
+          onClick={() => this.editorClosed.emit("cancel")}>
+          Zrušiť
+        </md-outlined-button>
+        <md-filled-button id="confirm" disabled={ !this.isValid }
+          onClick={() => this.updateEntry() }>
+          <md-icon slot="icon">save</md-icon>
+          Uložiť
+        </md-filled-button>
+      </div>
+    </Host>
     );
-  }
-
-  private handleInputEvent( ev: InputEvent): string {
-    const target = ev.target as HTMLInputElement;
-    // check validity of elements
-    this.isValid = true;
-    for (let i = 0; i < this.formElement.children.length; i++) {
-        const element = this.formElement.children[i]
-        if ("reportValidity" in element) {
-        const valid = (element as HTMLInputElement).reportValidity();
-        this.isValid &&= valid;
-        }
-    }
-    return target.value
-  }
-  
-  private async updateEntry() {
-    try {
-      const configuration = new Configuration({
-        basePath: this.apiBase,
-      });
-  
-      const waitingListApi = new AmbulanceWaitingListApi(configuration);
-  
-      const response = this.entryId == "@new" ?
-        await waitingListApi.createWaitingListEntryRaw({ambulanceId: this.ambulanceId, waitingListEntry: this.entry}) :
-        await waitingListApi.updateWaitingListEntryRaw({ambulanceId: this.ambulanceId, entryId: this.entryId, waitingListEntry: this.entry});
-  
-      if (response.raw.status < 299) {
-        this.editorClosed.emit("store")
-      } else {
-        this.errorMessage = `Cannot store entry: ${response.raw.statusText}`
-      }
-    } catch (err: any) {
-      this.errorMessage = `Cannot store entry: ${err.message || "unknown"}`
-    }
-  }
-  
-  private async deleteEntry() {
-    try {
-      const configuration = new Configuration({
-        basePath: this.apiBase,
-      });
-  
-      const waitingListApi = new AmbulanceWaitingListApi(configuration);
-  
-      const response = await waitingListApi.deleteWaitingListEntryRaw({ambulanceId: this.ambulanceId, entryId: this.entryId});
-        if (response.raw.status < 299) {
-        this.editorClosed.emit("delete")
-        } else {
-        this.errorMessage = `Cannot delete entry: ${response.raw.statusText}`
-        }
-    } catch (err: any) {
-        this.errorMessage = `Cannot delete entry: ${err.message || "unknown"}`
-    }
   }
 
   private renderConditions() {
@@ -261,6 +230,61 @@ export class Pr0miseAmbulanceWlEditor {
       this.entry.condition = Object.assign({}, condition);
       this.entry.estimatedDurationMinutes = condition.typicalDurationMinutes;
       this.duration = condition.typicalDurationMinutes;
+    }
+  }
+
+  private handleInputEvent( ev: InputEvent): string {
+    const target = ev.target as HTMLInputElement;
+    // check validity of elements
+    this.isValid = true;
+    for (let i = 0; i < this.formElement.children.length; i++) {
+        const element = this.formElement.children[i]
+        if ("reportValidity" in element) {
+        const valid = (element as HTMLInputElement).reportValidity();
+        this.isValid &&= valid;
+        }
+    }
+    return target.value
+  }
+
+  private async updateEntry() {
+    try {
+      const configuration = new Configuration({
+        basePath: this.apiBase,
+      });
+  
+      const waitingListApi = new AmbulanceWaitingListApi(configuration);
+  
+      const response = this.entryId == "@new" ?
+      await waitingListApi.createWaitingListEntryRaw({ambulanceId: this.ambulanceId, waitingListEntry: this.entry}) :
+      await waitingListApi.updateWaitingListEntryRaw({ambulanceId: this.ambulanceId, entryId: this.entryId, waitingListEntry: this.entry});
+
+      if (response.raw.status < 299) {
+        this.editorClosed.emit("store")
+      } else {
+        this.errorMessage = `Cannot store entry: ${response.raw.statusText}`
+      }
+    } catch (err: any) {
+      this.errorMessage = `Cannot store entry: ${err.message || "unknown"}`
+    }
+  }
+
+  private async deleteEntry() {
+    try {
+      const configuration = new Configuration({
+        basePath: this.apiBase,
+      });
+  
+      const waitingListApi = new AmbulanceWaitingListApi(configuration);
+  
+      const response = await waitingListApi.deleteWaitingListEntryRaw({ambulanceId: this.ambulanceId, entryId: this.entryId});
+        if (response.raw.status < 299) {
+        this.editorClosed.emit("delete")
+        } else {
+        this.errorMessage = `Cannot delete entry: ${response.raw.statusText}`
+        }
+    } catch (err: any) {
+        this.errorMessage = `Cannot delete entry: ${err.message || "unknown"}`
     }
   }
 }

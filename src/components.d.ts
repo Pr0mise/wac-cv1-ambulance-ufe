@@ -5,6 +5,8 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
+import { Pr0miseAmbulanceWlApp } from "./components/pr0mise-ambulance-wl-app/pr0mise-ambulance-wl-app";
+import { Pr0miseAmbulanceWlEditor } from "./components/pr0mise-ambulance-wl-editor/pr0mise-ambulance-wl-editor";
 export namespace Components {
     interface Pr0miseAmbulanceWlApp {
         "basePath": string;
@@ -72,13 +74,19 @@ declare global {
 }
 declare namespace LocalJSX {
     interface Pr0miseAmbulanceWlApp {
+        "ambulanceId"?: string;
+        "apiBase"?: string;
         "basePath"?: string;
     }
     interface Pr0miseAmbulanceWlEditor {
+        "ambulanceId"?: string;
+        "apiBase"?: string;
         "entryId"?: string;
         "onEditor-closed"?: (event: Pr0miseAmbulanceWlEditorCustomEvent<string>) => void;
     }
     interface Pr0miseAmbulanceWlList {
+        "ambulanceId"?: string;
+        "apiBase"?: string;
         "onEntry-clicked"?: (event: Pr0miseAmbulanceWlListCustomEvent<string>) => void;
     }
     interface IntrinsicElements {
